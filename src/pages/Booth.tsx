@@ -13,11 +13,10 @@ const Booth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Pastikan template default ada (jika kamu punya bawaan).
+    // Pastikan template default ada
     initializeDefaultFrames();
 
-    // Ambil semua frame dari storage.
-    // Kompatibilitas data lama: jika areasOnTop belum ada, default true (area di depan).
+    // Ambil semua frame dari storage dan normalisasi
     const stored = storageUtils.getFrames() as Frame[];
     const normalized = stored.map((f) => ({
       ...f,
@@ -35,14 +34,32 @@ const Booth = () => {
     navigate('/create-frame');
   };
 
-  const handleDeleteFrame = (frameId: string, imagePath: string, e?: React.MouseEvent) => {
-    // Supaya klik tombol hapus tidak ikut memicu click card (navigasi)
+  const handleDeleteFrame = (
+    frameId: string,
+    imagePath: string,
+    e?: React.MouseEvent
+  ) => {
+    e?.preventDefault();
     e?.stopPropagation();
 
-    storageUtils.deleteFrame(frameId);
-    storageUtils.deleteImage(imagePath);
+    // Tampilkan konfirmasi sebelum menghapus
+    const confirmDelete = window.confirm(
+      'Apakah kamu yakin ingin menghapus frame ini?'
+    );
+
+    if (!confirmDelete) return;
+
+    // Optimistic update: hapus langsung dari state
     setFrames((prevFrames) => prevFrames.filter((frame) => frame.id !== frameId));
-    toast.success('Frame dan gambar berhasil dihapus');
+
+    try {
+      storageUtils.deleteFrame(frameId);
+      storageUtils.deleteImage(imagePath);
+      toast.success('Frame dan gambar berhasil dihapus');
+    } catch (err) {
+      console.error(err);
+      toast.error('Gagal menghapus frame dari penyimpanan');
+    }
   };
 
   // Class aspect ratio untuk preview kartu
@@ -51,7 +68,7 @@ const Booth = () => {
       case '4x6':
         return 'aspect-[2/3]'; // 4x6 -> 2:3 (portrait)
       case '2x4':
-        return 'aspect-[1/2]'; // 2x4 -> 1:2 (landscape-ish preview)
+        return 'aspect-[1/2]'; // 2x4 -> 1:2
       default:
         return 'aspect-[2/3]';
     }
@@ -92,10 +109,10 @@ const Booth = () => {
           {frames.map((frame) => {
             const { w: baseW, h: baseH } = getBaseDims(frame.size);
             const aspectClass = getAspectClass(frame.size);
-
-            // Hormati preferensi layer; fallback true untuk data lama
             const areasOnTop =
-              typeof (frame as any).areasOnTop === 'boolean' ? (frame as any).areasOnTop : true;
+              typeof (frame as any).areasOnTop === 'boolean'
+                ? (frame as any).areasOnTop
+                : true;
 
             return (
               <Card
@@ -106,17 +123,24 @@ const Booth = () => {
                 onClick={() => handleFrameClick(frame.id)}
               >
                 <CardContent className="p-4">
-                  <div className={`relative ${aspectClass} bg-muted rounded-lg overflow-hidden mb-4`}>
+                  <div
+                    className={`relative ${aspectClass} bg-muted rounded-lg overflow-hidden mb-4`}
+                  >
                     {/* Gambar frame */}
                     <img
                       src={frame.image}
                       alt={frame.name}
-                      className={`absolute inset-0 w-full h-full object-cover
-                                  ${areasOnTop ? 'z-0' : 'z-10'}`}
+                      className={`absolute inset-0 w-full h-full object-cover ${
+                        areasOnTop ? 'z-0' : 'z-10'
+                      }`}
                     />
 
-                    {/* Area foto ditempatkan dalam satu container dengan z-index dinamis */}
-                    <div className={`absolute inset-0 ${areasOnTop ? 'z-10' : 'z-0'}`}>
+                    {/* Area foto */}
+                    <div
+                      className={`absolute inset-0 ${
+                        areasOnTop ? 'z-10' : 'z-0'
+                      }`}
+                    >
                       {frame.areas.map((area) => (
                         <div
                           key={area.id}
@@ -135,7 +159,7 @@ const Booth = () => {
                       ))}
                     </div>
 
-                    {/* Overlay kamera saat hover (harus di atas semuanya) */}
+                    {/* Overlay kamera saat hover */}
                     {hoveredFrame === frame.id && (
                       <div className="absolute inset-0 z-20 bg-camera-overlay flex items-center justify-center transition-all duration-300">
                         <div className="bg-primary p-4 rounded-full">
@@ -146,7 +170,9 @@ const Booth = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <h3 className="font-semibold text-foreground line-clamp-1">{frame.name}</h3>
+                    <h3 className="font-semibold text-foreground line-clamp-1">
+                      {frame.name}
+                    </h3>
                     <div className="flex justify-between text-sm text-muted-foreground">
                       <span>{frame.size} inch</span>
                       <span>{frame.areas.length} foto</span>
@@ -155,7 +181,9 @@ const Booth = () => {
 
                   <div className="mt-4">
                     <Button
-                      onClick={(e) => handleDeleteFrame(frame.id, frame.image, e)}
+                      onClick={(e) =>
+                        handleDeleteFrame(frame.id, frame.image, e)
+                      }
                       className="bg-red-500 hover:bg-red-600 text-white"
                     >
                       <Trash className="w-4 h-4 mr-2" />
@@ -177,7 +205,10 @@ const Booth = () => {
             <p className="text-muted-foreground mb-6">
               Buat frame pertama Anda untuk memulai sesi foto
             </p>
-            <Button onClick={handleCreateFrame} className="bg-primary hover:bg-primary/90">
+            <Button
+              onClick={handleCreateFrame}
+              className="bg-primary hover:bg-primary/90"
+            >
               <Plus className="w-4 h-4 mr-2" />
               Buat Frame Baru
             </Button>

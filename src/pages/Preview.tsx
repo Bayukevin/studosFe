@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Check, RotateCcw, Download } from 'lucide-react';
+import { Check, RotateCcw, Download, Printer } from 'lucide-react';
 import { Frame, PhotoArea, CapturedPhoto } from '@/types/photobooth';
 import { storageUtils } from '@/utils/storage';
 import { Button } from '@/components/ui/button';
@@ -114,8 +114,8 @@ const Preview = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8">
-          <Card>
+        <div className="grid lg:grid-cols-12 gap-8">
+          <Card className="lg:col-span-8">
             <CardHeader>
               <CardTitle className="text-black">Pratinjau Hasil</CardTitle>
             </CardHeader>
@@ -171,36 +171,19 @@ const Preview = () => {
               </div>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <Button onClick={() => navigate(-1)} variant="outline" className="text-black">
-                  <RotateCcw className="w-4 h-4 mr-2 text-black" />
-                  Kembali
-                </Button>
-
                 <Button
                   className="bg-primary hover:bg-primary/90"
                   disabled={!allFilled}
                   onClick={handleDownloadComposite}
                 >
-                  <Download className="w-4 h-4 mr-2" />
-                  {allFilled ? 'Download Hasil' : 'Lengkapi Semua Foto'}
+                  <Printer className="w-4 h-4 mr-2" />
+                  {allFilled ? 'Cetak Foto' : 'Lengkapi Semua Foto'}
                 </Button>
-
-                {allFilled && (
-                  <Button
-                    variant="secondary"
-                    onClick={() => {
-                      toast.success('Siap dicetak! (opsional: kirim ke printer / share)');
-                    }}
-                  >
-                    <Check className="w-4 h-4 mr-2" />
-                    Tandai Selesai
-                  </Button>
-                )}
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="lg:col-span-4">
             <CardHeader>
               <CardTitle className="text-black">Detail & Foto</CardTitle>
             </CardHeader>
@@ -217,16 +200,16 @@ const Preview = () => {
                   <div>
                     Area: <span className="text-muted-foreground font-medium">{frame.areas.length}</span>
                   </div>
-                  <div>
+                  {/* <div>
                     Layer:{" "}
                     <span className="text-muted-foreground font-medium">
                       {areasOnTop ? 'Area di depan gambar' : 'Area di belakang gambar'}
                     </span>
-                  </div>
+                  </div> */}
                 </div>
 
                 {frame.areas.length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-3 md:grid-cols-1 gap-3">
                     {frame.areas
                       .sort((a, b) => a.order - b.order)
                       .map((area) => {
@@ -266,7 +249,7 @@ const Preview = () => {
         </div>
 
         <div className="mt-8 text-center text-black">
-          <Button onClick={() => navigate('/')} variant="outline">
+          <Button onClick={() => navigate('/booth')} variant="outline">
             Kembali ke Booth
           </Button>
         </div>

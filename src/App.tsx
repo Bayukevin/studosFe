@@ -8,6 +8,8 @@ import CreateFrame from "./pages/CreateFrame";
 import TakePhoto from "./pages/TakePhoto";
 import NotFound from "./pages/NotFound";
 import Preview from "./pages/Preview";
+import Payment from "./pages/Payment";
+import Tutorial from "./pages/Tutorial";
 
 const queryClient = new QueryClient();
 
@@ -18,10 +20,12 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Booth />} />
+          <Route path="/" element={<Payment />} />
+          <Route path="/booth" element={<Booth />} />
           <Route path="/create-frame" element={<CreateFrame />} />
           <Route path="/take-photo/:frameId" element={<TakePhoto />} />
           <Route path="/preview/:frameId" element={<Preview />} />
+          <Route path="/tutorial" element={<Tutorial />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
